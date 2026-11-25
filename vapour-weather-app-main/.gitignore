@@ -1,0 +1,15 @@
+# Python / server temporary files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# OS / Editor artifacts
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Local environment / secrets (if using custom config)
+# Note: config.example.js is provided for public templates
+.env
+.env.local

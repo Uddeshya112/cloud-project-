@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vapour — Cloud Weather Telemetry</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Remix Icons CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet" />
+  <!-- Google Fonts: Orbitron (brand) + Inter (body) -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════
+       NAVBAR
+  ═══════════════════════════════════════════ -->
+  <header class="navbar" role="banner">
+    <div class="navbar__brand">
+      <span class="navbar__logo" aria-hidden="true">
+        <i class="ri-cloud-line"></i>
+      </span>
+      <div class="navbar__titles">
+        <span class="navbar__name">VAPOUR</span>
+        <span class="navbar__subtitle">Cloud Weather Telemetry</span>
+      </div>
+    </div>
+
+    <div class="navbar__status">
+      <span class="status-badge" aria-label="Cloud connection status: AWS DynamoDB Standby">
+        <span class="status-badge__dot" aria-hidden="true"></span>
+        <i class="ri-database-2-line" aria-hidden="true"></i>
+        AWS DynamoDB: Standby
+      </span>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════════════════
+       MAIN LAYOUT WRAPPER
+  ═══════════════════════════════════════════ -->
+  <main class="layout" role="main">
+
+    <!-- ── SEARCH SECTION ─────────────────────── -->
+    <section class="search-section" aria-label="City Search">
+      <div class="search-section__inner">
+        <label for="city-input" class="sr-only">Enter city name</label>
+        <div class="search-bar" role="search">
+          <i class="ri-map-pin-line search-bar__icon" aria-hidden="true"></i>
+          <input
+            type="text"
+            id="city-input"
+            class="search-bar__input"
+            placeholder="Enter city name…"
+            autocomplete="off"
+            spellcheck="false"
+            aria-label="City name"
+          />
+          <button class="search-bar__btn" id="search-btn" aria-label="Search weather">
+            <i class="ri-radar-line" aria-hidden="true"></i>
+            <span>Search</span>
+          </button>
+        </div>
+        <p class="search-section__hint">
+          <i class="ri-information-line" aria-hidden="true"></i>
+          Telemetry streams refresh every 10 minutes via AWS DynamoDB
+        </p>
+      </div>
+    </section>
+
+    <!-- ── CONTENT GRID ───────────────────────── -->
+    <div class="content-grid">
+
+      <!-- ══ WEATHER DISPLAY PANEL ══════════════ -->
+      <section class="weather-panel" aria-label="Current Weather">
+
+        <!-- Empty / Placeholder State -->
+        <div class="weather-panel__placeholder" id="weather-placeholder" aria-live="polite">
+          <div class="placeholder-icon">
+            <i class="ri-cloud-windy-line"></i>
+          </div>
+          <p class="placeholder-title">No Telemetry Stream</p>
+          <p class="placeholder-sub">Search for a city to begin cloud weather monitoring.</p>
+        </div>
+
+        <!-- Loaded Weather Data (hidden by default) -->
+        <div class="weather-data" id="weather-data" hidden aria-live="polite" aria-atomic="true">
+
+          <!-- Header: location + datetime -->
+          <div class="weather-data__header">
+            <div class="weather-data__location">
+              <h1 class="weather-data__city" id="weather-city">
+                <i class="ri-map-pin-2-fill" aria-hidden="true"></i>
+                <span id="city-name">London</span>
+              </h1>
+              <span class="weather-data__country" id="country-name">GB</span>
+            </div>
+            <div class="weather-data__datetime">
+              <time id="weather-date" class="weather-data__date" datetime="">Sunday, 15 Nov 2026</time>
+              <time id="weather-time" class="weather-data__time" datetime="">18:06 IST</time>
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div class="glow-divider" aria-hidden="true"></div>
+
+          <!-- Main temp + condition -->
+          <div class="weather-data__main">
+            <div class="weather-data__temp-block">
+              <span class="weather-data__temp" id="temperature" aria-label="Temperature">
+                24<sup>°C</sup>
+              </span>
+              <span class="weather-data__feels" id="feels-like">Feels like 22°C</span>
+            </div>
+            <div class="weather-data__condition-block">
+              <div class="weather-icon-wrap" aria-hidden="true">
+                <i class="ri-sun-cloudy-line weather-data__icon" id="weather-icon"></i>
+              </div>
+              <span class="weather-data__description" id="weather-desc">Partly Cloudy</span>
+            </div>
+          </div>
+
+          <!-- Divider -->
+          <div class="glow-divider" aria-hidden="true"></div>
+
+          <!-- Stats grid -->
+          <div class="weather-data__stats" role="list" aria-label="Weather statistics">
+
+            <div class="stat-card" role="listitem">
+              <div class="stat-card__icon" aria-hidden="true">
+                <i class="ri-drop-line"></i>
+              </div>
+              <div class="stat-card__info">
+                <span class="stat-card__label">Humidity</span>
+                <span class="stat-card__value" id="humidity">72%</span>
+              </div>
+            </div>
+
+            <div class="stat-card" role="listitem">
+              <div class="stat-card__icon" aria-hidden="true">
+                <i class="ri-windy-line"></i>
+              </div>
+              <div class="stat-card__info">
+                <span class="stat-card__label">Wind Speed</span>
+                <span class="stat-card__value" id="wind-speed">5.3 m/s</span>
+              </div>
+            </div>
+
+            <div class="stat-card" role="listitem">
+              <div class="stat-card__icon" aria-hidden="true">
+                <i class="ri-eye-line"></i>
+              </div>
+              <div class="stat-card__info">
+                <span class="stat-card__label">Visibility</span>
+                <span class="stat-card__value" id="visibility">10 km</span>
+              </div>
+            </div>
+
+            <div class="stat-card" role="listitem">
+              <div class="stat-card__icon" aria-hidden="true">
+                <i class="ri-compress-line"></i>
+              </div>
+              <div class="stat-card__info">
+                <span class="stat-card__label">Pressure</span>
+                <span class="stat-card__value" id="pressure">1013 hPa</span>
+              </div>
+            </div>
+
+          </div><!-- /stats -->
+
+        </div><!-- /weather-data -->
+
+        <!-- Loading State -->
+        <div class="weather-panel__loading" id="weather-loading" hidden aria-label="Loading weather data" aria-live="polite">
+          <div class="loader" aria-hidden="true">
+            <div class="loader__ring"></div>
+            <div class="loader__ring"></div>
+            <div class="loader__ring"></div>
+          </div>
+          <p>Fetching telemetry stream…</p>
+        </div>
+
+      </section><!-- /weather-panel -->
+
+      <!-- ══ RECENT SEARCHES SIDEBAR ════════════ -->
+      <aside class="sidebar" aria-label="Recent Searches">
+        <div class="sidebar__header">
+          <h2 class="sidebar__title">
+            <i class="ri-history-line" aria-hidden="true"></i>
+            Recent Searches
+          </h2>
+          <button class="sidebar__clear-btn" id="clear-btn" aria-label="Clear search history">
+            <i class="ri-delete-bin-6-line" aria-hidden="true"></i>
+            Clear
+          </button>
+        </div>
+
+        <!-- Storage-mode pill — toggled by app.js on boot -->
+        <div class="sidebar__storage-badge" id="storage-badge" aria-label="Storage mode" aria-live="polite">
+          <i class="ri-cloud-line" id="storage-badge-icon" aria-hidden="true"></i>
+          <span id="storage-badge-text">Initialising…</span>
+        </div>
+
+        <div class="sidebar__body">
+          <!-- Chips injected by JS -->
+          <ul class="chip-list" id="chip-list" role="list" aria-label="Previously searched cities">
+            <!-- Demo chips (will be managed by JS) -->
+            <li>
+              <button class="chip" role="listitem" aria-label="Search Tokyo again">
+                <i class="ri-map-pin-line" aria-hidden="true"></i>
+                Tokyo
+              </button>
+            </li>
+            <li>
+              <button class="chip" role="listitem" aria-label="Search New York again">
+                <i class="ri-map-pin-line" aria-hidden="true"></i>
+                New York
+              </button>
+            </li>
+            <li>
+              <button class="chip" role="listitem" aria-label="Search Mumbai again">
+                <i class="ri-map-pin-line" aria-hidden="true"></i>
+                Mumbai
+              </button>
+            </li>
+          </ul>
+
+          <p class="sidebar__empty" id="sidebar-empty" hidden aria-live="polite">
+            <i class="ri-cloud-off-line" aria-hidden="true"></i>
+            No recent searches yet.
+          </p>
+        </div>
+
+        <!-- Cloud uplink decorative panel -->
+        <div class="sidebar__uplink" aria-hidden="true">
+          <div class="uplink-header">
+            <i class="ri-signal-tower-line"></i> CLOUD UPLINK
+          </div>
+          <div class="uplink-row">
+            <span>Latency</span><span class="uplink-val">42 ms</span>
+          </div>
+          <div class="uplink-row">
+            <span>Region</span><span class="uplink-val">ap-south-1</span>
+          </div>
+          <div class="uplink-row">
+            <span>Provider</span><span class="uplink-val">AWS</span>
+          </div>
+          <div class="uplink-row">
+            <span>Protocol</span><span class="uplink-val">HTTPS/2</span>
+          </div>
+        </div>
+
+      </aside><!-- /sidebar -->
+
+    </div><!-- /content-grid -->
+
+  </main>
+
+  <!-- ═══════════════════════════════════════════
+       FOOTER
+  ═══════════════════════════════════════════ -->
+  <footer class="footer" role="contentinfo">
+    <span>VAPOUR &copy; 2026</span>
+    <span class="footer__sep" aria-hidden="true">|</span>
+    <span>Cloud Weather Telemetry Platform</span>
+    <span class="footer__sep" aria-hidden="true">|</span>
+    <span>All streams encrypted via TLS 1.3</span>
+  </footer>
+
+  <!-- config.js runs first (defer) so window.VapourConfig is set before the ES module evaluates -->
+  <script src="config.js" defer></script>
+  <!-- app.js is a type="module" — modules are deferred by spec and respect document order -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>
